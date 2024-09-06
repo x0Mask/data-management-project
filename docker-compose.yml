@@ -1,0 +1,43 @@
+version: '3.8'  # Specifies the version of Docker Compose syntax being used
+
+services:
+    # PHP Service
+    php:
+        build: .  # Builds the PHP container using the Dockerfile in the current directory
+        ports:
+            - "8080:80"  # Maps port 80 in the container to port 8080 on the host machine
+        volumes:
+            - .:/var/www/html  # Maps the current directory to /var/www/html in the container, allowing live code editing
+        networks:
+            - app-network  # Connects the PHP service to the custom network 'app-network'
+
+    # MySQL Database Service
+    mysql:
+        image: mysql:5.7  # Uses the MySQL version 5.7 image from Docker Hub
+        environment:
+            MYSQL_DATABASE: data_management  # Creates a database named 'data_management'
+            MYSQL_ROOT_PASSWORD: root_password  # Sets the root user password to 'root_password'
+            MYSQL_USER: user  # Creates a new MySQL user named 'user'
+            MYSQL_PASSWORD: 123456  # Sets the password for the user 'user' to '123456'
+        ports:
+            - "3308:3306"  # Maps port 3306 in the container to port 3308 on the host machine
+        networks:
+            - app-network  # Connects the MySQL service to the custom network 'app-network'
+
+    # phpMyAdmin Service
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin  # Uses the phpMyAdmin image from Docker Hub
+        environment:
+            PMA_HOST: mysql  # Sets the MySQL host to 'mysql', allowing phpMyAdmin to connect to the MySQL service
+            MYSQL_ROOT_PASSWORD: root_password  # Uses the root password defined for the MySQL service
+        ports:
+            - "8081:80"  # Maps port 80 in the container to port 8081 on the host machine
+        depends_on:
+            - mysql  # Ensures that the MySQL service is started before phpMyAdmin
+        networks:
+            - app-network  # Connects the phpMyAdmin service to the custom network 'app-network'
+
+# Custom Network Definition
+networks:
+    app-network:
+        driver: bridge  # Uses the bridge driver to create a local network for inter-container communication
